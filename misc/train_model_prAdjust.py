@@ -146,4 +146,4 @@ from pathlib import Path
 
 # Create the directory if it doesn't exist
 Path("models").mkdir(parents=True, exist_ok=True)
-joblib.dump(model, "models/temp_max_year.joblib")
+joblib.dump(model, "models/pred_cum_year.joblib")
