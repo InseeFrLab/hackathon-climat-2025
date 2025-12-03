@@ -7,8 +7,24 @@ FastAPI application that serves climate projection data for French addresses.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routers import climate
+import joblib
+import logging
+from contextlib import asynccontextmanager
+
+from src.patched_lightgbm import PatchedLGBMRegressor
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger = logging.getLogger(__name__)
+    logger.info("🚀 Starting API lifespan")
+
+    app.state.temp_max_model = joblib.load("models/temp_max_year.joblib")
+
+    yield
+    logger.info("🛑 Shutting down API lifespan")
 
 app = FastAPI(
+    lifespan=lifespan,
     title="Climate Projections API",
     description="API for retrieving climate projections and commune data for French addresses",
     version="0.1.0"

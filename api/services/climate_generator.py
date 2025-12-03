@@ -8,6 +8,9 @@ Uses IPCC-aligned warming scenarios and French climate patterns.
 import math
 from typing import Dict, List
 
+import polars as pl
+import datetime
+
 
 def _get_base_temperature(lat: float) -> float:
     """
@@ -80,7 +83,7 @@ def generate_monthly_temps(base_temp: float, warming: float) -> List[float]:
     return monthly
 
 
-def generate_climate_projections(lat: float, lon: float) -> Dict[str, dict]:
+async def generate_climate_projections(lat: float, lon: float, temp_max_model) -> Dict[str, dict]:
     """
     Generate synthetic climate projections for a location.
 
@@ -100,28 +103,31 @@ def generate_climate_projections(lat: float, lon: float) -> Dict[str, dict]:
         - temp_max: Annual maximum temperature
         - annual_precip: Annual precipitation in mm
     """
-    # Get base climate from latitude
-    base_temp = _get_base_temperature(lat)
-    base_precip = _get_base_precipitation(lat)
 
+    # Years to predict
+    years = [2093, 2095, 2099]
+    
     projections = {}
+    for year in years:
+        # Create input dataframe: January 1st of target year
+        input_df = pl.DataFrame({
+            "x": [lon],
+            "y": [lat],
+            "year": [datetime.date(year, 1, 1)]
+        })
 
-    # Generate for each projection year
-    # (year, warming°C, precipitation_factor)
-    scenarios = [
-        (2030, 0.8, 0.95),   # Early warming, slight precipitation decline
-        (2050, 1.8, 0.90),   # Moderate warming, noticeable precipitation decline
-        (2100, 3.5, 0.80),   # Significant warming, major precipitation decline
-    ]
-
-    for year, warming, precip_factor in scenarios:
-        monthly = generate_monthly_temps(base_temp, warming)
-
+        # Get prediction from model
+        prediction = temp_max_model.predict(input_df)
+        
+        # Extract the predicted value (assuming it returns array-like)
+        temp_max_pred = float(prediction[0]) if hasattr(prediction, '__getitem__') else float(prediction)
+        
         projections[str(year)] = {
-            "monthly_temp": monthly,
-            "temp_min": round(min(monthly) - 3.0, 1),  # Extreme cold below January avg
-            "temp_max": round(max(monthly) + 4.0, 1),  # Extreme heat above July avg
-            "annual_precip": int(base_precip * precip_factor)
+            "temp_max": round(temp_max_pred, 1),
+            # You can add other fields here if needed
+            "prediction_date": f"{year}-01-01"
         }
 
+        print(projections)
+    
     return projections

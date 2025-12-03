@@ -5,7 +5,7 @@ Orchestrates geocoding, climate generation, and boundary services
 to provide complete climate projection data for French addresses.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from api.services.geocoding import geocode_address, AddressNotFoundException
 from api.services.climate_generator import generate_climate_projections
 from api.services.boundary_service import get_commune_boundary, get_cache_stats
@@ -16,6 +16,7 @@ router = APIRouter()
 
 @router.get("/climate")
 async def get_climate(
+    request: Request,  # Add Request to access app.state
     address: str = Query(
         ...,
         min_length=3,
@@ -24,11 +25,11 @@ async def get_climate(
     )
 ):
     """
-    Get climate projections for a French address.
+    Get climate projections for a French address using ML model.
 
     This endpoint:
     1. Geocodes the address using API Adresse
-    2. Generates synthetic climate projections (2030, 2050, 2100)
+    2. Generates ML-based climate projections (2030, 2050, 2100)
     3. Fetches commune boundary GeoJSON
 
     Args:
@@ -45,10 +46,11 @@ async def get_climate(
         # Step 1: Geocode address
         geocoding = await geocode_address(address)
 
-        # Step 2: Generate climate data based on coordinates
-        climate = generate_climate_projections(
+        # Step 2: Generate climate data using ML model
+        climate = await generate_climate_projections(
             lat=geocoding.coordinates[1],  # latitude
-            lon=geocoding.coordinates[0]   # longitude
+            lon=geocoding.coordinates[0],  # longitude
+            temp_max_model=request.app.state.temp_max_model
         )
 
         # Step 3: Fetch commune boundary (may be None if not available)

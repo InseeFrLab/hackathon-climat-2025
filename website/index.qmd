@@ -25,7 +25,7 @@ viewof address = Inputs.text({
 //| echo: false
 
 // API configuration
-apiBaseUrl = "https://user-h4njlg-285155-0.user.lab.sspcloud.fr/proxy/8000/"
+apiBaseUrl = "https://user-meilametayebjee-424595-0.user.lab.sspcloud.fr/proxy/5001/"
 
 // State management
 mutable apiResponse = null

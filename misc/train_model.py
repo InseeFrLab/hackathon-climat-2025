@@ -1,3 +1,5 @@
+""" uv run -m misc.train_model """
+
 import os
 import tempfile
 import zipfile
@@ -11,6 +13,8 @@ import geopandas as gpd
 from shapely.geometry import Point
 from tqdm import tqdm
 
+from src.patched_lightgbm import PatchedLGBMRegressor
+
 # 1) Charger ton NetCDF et générer les points
 ds = xr.open_dataset(
     "https://object.files.data.gouv.fr/meteofrance-drias/SocleM-Climat-2025/CPRCM/METROPOLE/ALPX-3/CNRM-ESM2-1/r1i1p1f2/CNRM-AROME46t1/ssp370/day/tasmaxAdjust/version-hackathon-102025/tasmaxAdjust_FR-Metro_CNRM-ESM2-1_ssp370_r1i1p1f2_CNRM-MF_CNRM-AROME46t1_v1-r1_MF-CDFt-ANASTASIA-ALPX-3-1991-2020_day_20900101-20991231.nc",
@@ -18,8 +22,6 @@ ds = xr.open_dataset(
 )
 
 ds = ds.sel(time=ds.time.dt.year.isin([2093, 2095, 2099]))
-
-df = ds.to_dataframe().reset_index()
 
 da = ds["tasmaxAdjust"]
 
@@ -71,23 +73,6 @@ y_train = y_train.to_numpy()
 y_test = y_test.to_numpy()
 
 
-
-
-class PatchedLGBMRegressor(lightgbm.LGBMRegressor):
-
-    @property
-    def feature_names_in_(self):
-        return self._feature_name
-
-    @feature_names_in_.setter
-    def feature_names_in_(self, x):
-        self._feature_name = x
-
-
-
-
-
-
 model = create_price_model_pipeline(
     model=PatchedLGBMRegressor(verbose=-1),
     presence_coordinates=True,
@@ -117,8 +102,6 @@ params = {
 model.set_params(**params)
 
 preprocessing_pipeline = model[:-1]
-
-
 
 
 preprocessing_pipeline.fit(X_train, y_train)
@@ -154,3 +137,12 @@ pred_train = model.predict(X_train)
 from sklearn.metrics import r2_score
 
 r2_score(y_test, pred)
+
+
+import joblib
+
+from pathlib import Path
+
+# Create the directory if it doesn't exist
+Path("models").mkdir(parents=True, exist_ok=True)
+joblib.dump(model, "models/temp_max_year.joblib")
