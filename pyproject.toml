@@ -26,4 +26,8 @@ dependencies = [
     "uvicorn[standard]>=0.38.0",
     "httpx>=0.28.1",
     "pydantic-settings>=2.12.0",
+    "cwhpp",
 ]
+
+[tool.uv.sources]
+cwhpp = { git = "https://github.com/oliviermeslin/cwhpp.git" }
