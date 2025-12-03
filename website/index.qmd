@@ -1,0 +1,328 @@
+---
+title: "Climate Projections for France"
+subtitle: "Explore temperature and precipitation forecasts for 2030, 2050, and 2100"
+format:
+  html:
+    code-tools: false
+---
+
+## Enter Your Address
+
+Use the form below to explore climate projections for specific locations in France.
+
+```{ojs}
+//| echo: false
+
+// Address input form
+viewof address = Inputs.text({
+  label: "Enter an address in France:",
+  placeholder: "e.g., 88 avenue henri verdier, Montrouge",
+  value: ""
+})
+```
+
+```{ojs}
+//| echo: false
+
+// API configuration
+apiBaseUrl = "https://user-h4njlg-285155-0.user.lab.sspcloud.fr/proxy/8000/"
+
+// State management
+mutable apiResponse = null
+mutable isLoading = false
+mutable apiError = null
+```
+
+```{ojs}
+//| echo: false
+
+// Fetch climate data from API
+async function fetchClimateData(addressQuery) {
+  mutable isLoading = true;
+  mutable apiError = null;
+
+  try {
+    const encodedAddress = encodeURIComponent(addressQuery);
+    const url = `${apiBaseUrl}/api/climate?address=${encodedAddress}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    mutable apiResponse = data;
+  } catch (error) {
+    console.error("API Error:", error);
+    mutable apiError = error.message;
+    mutable apiResponse = null;
+  } finally {
+    mutable isLoading = false;
+  }
+}
+```
+
+```{ojs}
+//| echo: false
+
+// Debounced search trigger
+searchTrigger = {
+  if (!address || address.trim() === "") {
+    mutable apiResponse = null;
+    mutable apiError = null;
+    return;
+  }
+
+  // Debounce: wait 500ms after user stops typing
+  yield Promises.delay(500);
+  await fetchClimateData(address);
+}
+```
+
+```{ojs}
+//| echo: false
+
+// Transform API response to match existing structure
+selectedData = {
+  if (isLoading) return "loading";
+  if (apiError) return "error";
+  if (!apiResponse) return null;
+
+  // Transform API response to match existing structure
+  return {
+    address: apiResponse.geocoding.label,
+    data: {
+      metadata: {
+        commune: apiResponse.geocoding.commune,
+        insee: apiResponse.geocoding.insee,
+        coordinates: apiResponse.geocoding.coordinates
+      },
+      "2030": apiResponse.climate["2030"],
+      "2050": apiResponse.climate["2050"],
+      "2100": apiResponse.climate["2100"]
+    }
+  };
+}
+```
+
+```{ojs}
+//| echo: false
+
+// Display validation message, loading state, or errors
+html`${
+  isLoading
+    ? '<div class="success-message">🔍 Searching for address...</div>'
+    : apiError
+    ? `<div class="error-message"><strong>Error:</strong> ${apiError}</div>`
+    : selectedData === null
+    ? '<div class="success-message">Please enter an address above to view climate projections. Try any French address like "Paris", "Lyon", or "88 avenue henri verdier, Montrouge".</div>'
+    : ''
+}`
+```
+
+## Location Map
+
+```{ojs}
+//| echo: false
+
+// Import Leaflet library
+L = require("leaflet@1.9.4")
+```
+
+```{ojs}
+//| echo: false
+
+// Create map
+map = {
+  // Show placeholder during loading or when no address selected
+  if (!selectedData || selectedData === "loading" || selectedData === "error") {
+    const message = selectedData === "loading"
+      ? "Loading map..."
+      : selectedData === "error"
+      ? "Map unavailable"
+      : "Select an address to view its location on the map";
+
+    return html`<div style="height: 400px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6b7280;">
+      <p>${message}</p>
+    </div>`;
+  }
+
+  // Create container
+  const container = html`<div style="height: 400px; border-radius: 8px; overflow: hidden;"></div>`;
+
+  // Get coordinates from metadata
+  const coords = selectedData.data.metadata.coordinates;
+  const [lon, lat] = coords;
+
+  // Initialize map
+  const leafletMap = L.map(container).setView([lat, lon], 12);
+
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(leafletMap);
+
+  // Get commune boundary from API response
+  const communeFeature = apiResponse.commune_boundary;
+
+  // Add commune boundary if available
+  if (communeFeature) {
+    L.geoJSON(communeFeature, {
+      style: {
+        color: '#3B82F6',
+        weight: 3,
+        fillColor: '#3B82F6',
+        fillOpacity: 0.2
+      }
+    }).addTo(leafletMap);
+
+    // Fit map to commune bounds
+    const communeLayer = L.geoJSON(communeFeature);
+    leafletMap.fitBounds(communeLayer.getBounds(), { padding: [50, 50] });
+  }
+
+  // Add marker at address location
+  const marker = L.marker([lat, lon]).addTo(leafletMap);
+  marker.bindPopup(`
+    <strong>${selectedData.data.metadata.commune}</strong><br>
+    ${selectedData.address}<br>
+    <em>INSEE: ${selectedData.data.metadata.insee}</em>
+  `).openPopup();
+
+  // Invalidate size after rendering
+  setTimeout(() => leafletMap.invalidateSize(), 100);
+
+  return container;
+}
+```
+
+## Climate Projections Overview
+
+```{ojs}
+//| echo: false
+
+// Summary cards for each year
+html`${
+  selectedData && selectedData !== "not_found" ? `
+    <div class="cards">
+      <div class="card" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);">
+        <h3>2030</h3>
+        <p><strong>Avg Temp:</strong> ${(selectedData.data["2030"].monthly_temp.reduce((a, b) => a + b) / 12).toFixed(1)}°C</p>
+        <p><strong>Min:</strong> ${selectedData.data["2030"].temp_min}°C</p>
+        <p><strong>Max:</strong> ${selectedData.data["2030"].temp_max}°C</p>
+        <p><strong>Precipitation:</strong> ${selectedData.data["2030"].annual_precip}mm</p>
+      </div>
+      <div class="card" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
+        <h3>2050</h3>
+        <p><strong>Avg Temp:</strong> ${(selectedData.data["2050"].monthly_temp.reduce((a, b) => a + b) / 12).toFixed(1)}°C</p>
+        <p><strong>Min:</strong> ${selectedData.data["2050"].temp_min}°C</p>
+        <p><strong>Max:</strong> ${selectedData.data["2050"].temp_max}°C</p>
+        <p><strong>Precipitation:</strong> ${selectedData.data["2050"].annual_precip}mm</p>
+      </div>
+      <div class="card" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);">
+        <h3>2100</h3>
+        <p><strong>Avg Temp:</strong> ${(selectedData.data["2100"].monthly_temp.reduce((a, b) => a + b) / 12).toFixed(1)}°C</p>
+        <p><strong>Min:</strong> ${selectedData.data["2100"].temp_min}°C</p>
+        <p><strong>Max:</strong> ${selectedData.data["2100"].temp_max}°C</p>
+        <p><strong>Precipitation:</strong> ${selectedData.data["2100"].annual_precip}mm</p>
+      </div>
+    </div>
+  ` : ''
+}`
+```
+
+## Monthly Temperature Projections
+
+```{ojs}
+//| echo: false
+
+// Function to get color based on temperature
+function getTemperatureColor(temp) {
+  if (temp < 5) return "#3B82F6";    // Blue (cold)
+  if (temp < 15) return "#10B981";   // Green (mild)
+  if (temp < 25) return "#F59E0B";   // Orange (warm)
+  return "#EF4444";                   // Red (hot)
+}
+```
+
+```{ojs}
+//| echo: false
+
+// Monthly temperature table
+Inputs.table(
+  selectedData && selectedData !== "not_found"
+    ? [
+        { month: "January", "2030": selectedData.data["2030"].monthly_temp[0], "2050": selectedData.data["2050"].monthly_temp[0], "2100": selectedData.data["2100"].monthly_temp[0] },
+        { month: "February", "2030": selectedData.data["2030"].monthly_temp[1], "2050": selectedData.data["2050"].monthly_temp[1], "2100": selectedData.data["2100"].monthly_temp[1] },
+        { month: "March", "2030": selectedData.data["2030"].monthly_temp[2], "2050": selectedData.data["2050"].monthly_temp[2], "2100": selectedData.data["2100"].monthly_temp[2] },
+        { month: "April", "2030": selectedData.data["2030"].monthly_temp[3], "2050": selectedData.data["2050"].monthly_temp[3], "2100": selectedData.data["2100"].monthly_temp[3] },
+        { month: "May", "2030": selectedData.data["2030"].monthly_temp[4], "2050": selectedData.data["2050"].monthly_temp[4], "2100": selectedData.data["2100"].monthly_temp[4] },
+        { month: "June", "2030": selectedData.data["2030"].monthly_temp[5], "2050": selectedData.data["2050"].monthly_temp[5], "2100": selectedData.data["2100"].monthly_temp[5] },
+        { month: "July", "2030": selectedData.data["2030"].monthly_temp[6], "2050": selectedData.data["2050"].monthly_temp[6], "2100": selectedData.data["2100"].monthly_temp[6] },
+        { month: "August", "2030": selectedData.data["2030"].monthly_temp[7], "2050": selectedData.data["2050"].monthly_temp[7], "2100": selectedData.data["2100"].monthly_temp[7] },
+        { month: "September", "2030": selectedData.data["2030"].monthly_temp[8], "2050": selectedData.data["2050"].monthly_temp[8], "2100": selectedData.data["2100"].monthly_temp[8] },
+        { month: "October", "2030": selectedData.data["2030"].monthly_temp[9], "2050": selectedData.data["2050"].monthly_temp[9], "2100": selectedData.data["2100"].monthly_temp[9] },
+        { month: "November", "2030": selectedData.data["2030"].monthly_temp[10], "2050": selectedData.data["2050"].monthly_temp[10], "2100": selectedData.data["2100"].monthly_temp[10] },
+        { month: "December", "2030": selectedData.data["2030"].monthly_temp[11], "2050": selectedData.data["2050"].monthly_temp[11], "2100": selectedData.data["2100"].monthly_temp[11] }
+      ]
+    : [],
+  {
+    format: {
+      "2030": (x) => html`<span style="background-color: ${getTemperatureColor(x)}; color: white; padding: 4px 8px; border-radius: 4px; display: inline-block; min-width: 50px;">${x.toFixed(1)}°C</span>`,
+      "2050": (x) => html`<span style="background-color: ${getTemperatureColor(x)}; color: white; padding: 4px 8px; border-radius: 4px; display: inline-block; min-width: 50px;">${x.toFixed(1)}°C</span>`,
+      "2100": (x) => html`<span style="background-color: ${getTemperatureColor(x)}; color: white; padding: 4px 8px; border-radius: 4px; display: inline-block; min-width: 50px;">${x.toFixed(1)}°C</span>`
+    }
+  }
+)
+```
+
+## Temperature Extremes
+
+```{ojs}
+//| echo: false
+
+// Temperature extremes table
+Inputs.table(
+  selectedData && selectedData !== "not_found"
+    ? [
+        { metric: "Annual Minimum (°C)", "2030": selectedData.data["2030"].temp_min, "2050": selectedData.data["2050"].temp_min, "2100": selectedData.data["2100"].temp_min },
+        { metric: "Annual Maximum (°C)", "2030": selectedData.data["2030"].temp_max, "2050": selectedData.data["2050"].temp_max, "2100": selectedData.data["2100"].temp_max }
+      ]
+    : [],
+  {
+    format: {
+      "2030": (x) => x.toFixed(1),
+      "2050": (x) => x.toFixed(1),
+      "2100": (x) => x.toFixed(1)
+    }
+  }
+)
+```
+
+## Annual Precipitation
+
+```{ojs}
+//| echo: false
+
+// Precipitation table
+Inputs.table(
+  selectedData && selectedData !== "not_found"
+    ? [
+        { metric: "Annual Precipitation (mm)", "2030": selectedData.data["2030"].annual_precip, "2050": selectedData.data["2050"].annual_precip, "2100": selectedData.data["2100"].annual_precip }
+      ]
+    : []
+)
+```
+
+---
+
+## About This Data
+
+This demonstration uses mock climate projection data for two French addresses:
+- **88 avenue henri verdier, Montrouge** (Paris region)
+- **42 Av. Gaspard Coriolis, 31100 Toulouse** (South of France)
+
+The projections show trends of increasing temperatures and changing precipitation patterns from 2030 through 2100.

@@ -1,0 +1,100 @@
+/* Card layout for year summaries */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.card {
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  color: white;
+}
+
+.card h3 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.card p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+/* Temperature heat map colors */
+.temp-cold {
+  background-color: #3B82F6;
+  color: white;
+}
+
+.temp-mild {
+  background-color: #10B981;
+  color: white;
+}
+
+.temp-warm {
+  background-color: #F59E0B;
+  color: white;
+}
+
+.temp-hot {
+  background-color: #EF4444;
+  color: white;
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+th, td {
+  padding: 0.75rem;
+  text-align: center;
+  border: 1px solid #E5E7EB;
+}
+
+th {
+  background-color: #F3F4F6;
+  font-weight: 600;
+}
+
+/* Error message */
+.error-message {
+  padding: 1rem;
+  background-color: #FEE2E2;
+  border: 1px solid #EF4444;
+  border-radius: 8px;
+  color: #991B1B;
+  margin: 1rem 0;
+}
+
+/* Success message */
+.success-message {
+  padding: 1rem;
+  background-color: #D1FAE5;
+  border: 1px solid #10B981;
+  border-radius: 8px;
+  color: #065F46;
+  margin: 1rem 0;
+}
+
+/* Form styling */
+input[type="text"] {
+  width: 100%;
+  max-width: 600px;
+  padding: 0.75rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

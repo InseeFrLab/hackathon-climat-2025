@@ -21,4 +21,9 @@ dependencies = [
     "xarray>=2025.11.0",
     "dask>=2025.11.0",
     "pyarrow>=22.0.0",
+    "cartiflette>=0.1.9",
+    "fastapi>=0.123.5",
+    "uvicorn[standard]>=0.38.0",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.12.0",
 ]

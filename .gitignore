@@ -1,3 +1,6 @@
 *.nc
 /data/*
-___pycache___/
+__pycache__/
+
+.quarto/
+_site/

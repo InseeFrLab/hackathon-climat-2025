@@ -1,0 +1,19 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Climate Projections France"
+  navbar:
+    left:
+      - text: "Home"
+        href: index.qmd
+
+format:
+  html:
+    theme: cosmo
+    css:
+      - styles.css
+      - https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
+    toc: true
+    code-fold: true
