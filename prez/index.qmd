@@ -1,0 +1,42 @@
+---
+title: Hackathon "Le climat en données"
+date: 2025-12-03
+date-format: short
+slide-number: true
+footer: |
+  3 décembre 2025 - Hackathon "Le climat en données"
+lang: fr-FR
+format:
+  onyxia-revealjs:
+    smaller: true
+    width: 1400
+    height: 800
+    scrollable: true
+from: markdown+emoji
+---
+
+## L'équipe
+
+- Meilame T
+- Cédric C
+- Laura G
+- Nicolas T
+
+## Présentation du projet {.smaller}
+
+| Partie | Description |
+| --- | --- |
+| **Description générale du projet** | Descente d'échelle pour prévisualiser les données de projection climatique à échelle à son adresse. |
+| **Problématique et proposition de valeur** | - Quel temps fera-t-il chez moi en 2100 ?<br> - Visualisation des données de projection climatique à échelle locale avec interpolation des modèles par méthode de boosting |
+| **Solution** | - Utilisation des modèles CPRCM <br> - interpolation des projections par gradient boosting <br> - récupération des coordonnées des adresses par utilisation de la BAN par API <br> - [mise en place d'une API](https://user-h4njlg-293358-user-8000.user.lab.sspcloud.fr/docs) pour stocker les données interpolées et géolocalisées <br> - visualisation des données sur [un site](https://user-h4njlg-293358-user-3000.user.lab.sspcloud.fr/) en entrant son adresse postale |
+| **Impact envisagé** | La solution permet à tout citoyen de visualiser le résultat des projections climatiques à son adresse en 2100. Cela doit permettre de se rendre compte des évolutions concrètes que le changement climatique va engendrer pour chacun. |
+| **Ressources** | - [Site web interactif](https://user-h4njlg-293358-user-3000.user.lab.sspcloud.fr/) <br> - code public sur [https://github.com/InseeFrLab/hackathon-climat-2025](https://github.com/InseeFrLab/hackathon-climat-2025) |
+| **Retours consolidés sur les données exploitées** | - Pas de recherche de cohérence sur les données effectuée <br> - difficultés : taille des données, leur éparpillement et complexité des prévisions pour des non initiés |
+
+## Site final de visualisation {.smaller}
+
+![](site.png)
+
+[Site web interactif](https://user-h4njlg-293358-user-3000.user.lab.sspcloud.fr/)
+
+
