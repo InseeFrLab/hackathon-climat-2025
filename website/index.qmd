@@ -84,7 +84,6 @@ searchTrigger = {
 ```{ojs}
 //| echo: false
 
-// Transform API response to match existing structure
 selectedData = {
   if (isLoading) return "loading";
   if (apiError) return "error";
@@ -99,9 +98,9 @@ selectedData = {
         insee: apiResponse.geocoding.insee,
         coordinates: apiResponse.geocoding.coordinates
       },
-      "2030": apiResponse.climate["2030"],
-      "2050": apiResponse.climate["2050"],
-      "2100": apiResponse.climate["2100"]
+      "2030": apiResponse.climate["2093"],
+      "2050": apiResponse.climate["2095"],
+      "2100": apiResponse.climate["2096"]
     }
   };
 }
@@ -210,21 +209,18 @@ html`${
     <div class="cards">
       <div class="card" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);">
         <h3>2030</h3>
-        <p><strong>Avg Temp:</strong> ${(selectedData.data["2030"].monthly_temp.reduce((a, b) => a + b) / 12).toFixed(1)}°C</p>
         <p><strong>Min:</strong> ${selectedData.data["2030"].temp_min}°C</p>
         <p><strong>Max:</strong> ${selectedData.data["2030"].temp_max}°C</p>
         <p><strong>Precipitation:</strong> ${selectedData.data["2030"].annual_precip}mm</p>
       </div>
       <div class="card" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
         <h3>2050</h3>
-        <p><strong>Avg Temp:</strong> ${(selectedData.data["2050"].monthly_temp.reduce((a, b) => a + b) / 12).toFixed(1)}°C</p>
         <p><strong>Min:</strong> ${selectedData.data["2050"].temp_min}°C</p>
         <p><strong>Max:</strong> ${selectedData.data["2050"].temp_max}°C</p>
         <p><strong>Precipitation:</strong> ${selectedData.data["2050"].annual_precip}mm</p>
       </div>
       <div class="card" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);">
         <h3>2100</h3>
-        <p><strong>Avg Temp:</strong> ${(selectedData.data["2100"].monthly_temp.reduce((a, b) => a + b) / 12).toFixed(1)}°C</p>
         <p><strong>Min:</strong> ${selectedData.data["2100"].temp_min}°C</p>
         <p><strong>Max:</strong> ${selectedData.data["2100"].temp_max}°C</p>
         <p><strong>Precipitation:</strong> ${selectedData.data["2100"].annual_precip}mm</p>
@@ -232,51 +228,6 @@ html`${
     </div>
   ` : ''
 }`
-```
-
-## Monthly Temperature Projections
-
-```{ojs}
-//| echo: false
-
-// Function to get color based on temperature
-function getTemperatureColor(temp) {
-  if (temp < 5) return "#3B82F6";    // Blue (cold)
-  if (temp < 15) return "#10B981";   // Green (mild)
-  if (temp < 25) return "#F59E0B";   // Orange (warm)
-  return "#EF4444";                   // Red (hot)
-}
-```
-
-```{ojs}
-//| echo: false
-
-// Monthly temperature table
-Inputs.table(
-  selectedData && selectedData !== "not_found"
-    ? [
-        { month: "January", "2030": selectedData.data["2030"].monthly_temp[0], "2050": selectedData.data["2050"].monthly_temp[0], "2100": selectedData.data["2100"].monthly_temp[0] },
-        { month: "February", "2030": selectedData.data["2030"].monthly_temp[1], "2050": selectedData.data["2050"].monthly_temp[1], "2100": selectedData.data["2100"].monthly_temp[1] },
-        { month: "March", "2030": selectedData.data["2030"].monthly_temp[2], "2050": selectedData.data["2050"].monthly_temp[2], "2100": selectedData.data["2100"].monthly_temp[2] },
-        { month: "April", "2030": selectedData.data["2030"].monthly_temp[3], "2050": selectedData.data["2050"].monthly_temp[3], "2100": selectedData.data["2100"].monthly_temp[3] },
-        { month: "May", "2030": selectedData.data["2030"].monthly_temp[4], "2050": selectedData.data["2050"].monthly_temp[4], "2100": selectedData.data["2100"].monthly_temp[4] },
-        { month: "June", "2030": selectedData.data["2030"].monthly_temp[5], "2050": selectedData.data["2050"].monthly_temp[5], "2100": selectedData.data["2100"].monthly_temp[5] },
-        { month: "July", "2030": selectedData.data["2030"].monthly_temp[6], "2050": selectedData.data["2050"].monthly_temp[6], "2100": selectedData.data["2100"].monthly_temp[6] },
-        { month: "August", "2030": selectedData.data["2030"].monthly_temp[7], "2050": selectedData.data["2050"].monthly_temp[7], "2100": selectedData.data["2100"].monthly_temp[7] },
-        { month: "September", "2030": selectedData.data["2030"].monthly_temp[8], "2050": selectedData.data["2050"].monthly_temp[8], "2100": selectedData.data["2100"].monthly_temp[8] },
-        { month: "October", "2030": selectedData.data["2030"].monthly_temp[9], "2050": selectedData.data["2050"].monthly_temp[9], "2100": selectedData.data["2100"].monthly_temp[9] },
-        { month: "November", "2030": selectedData.data["2030"].monthly_temp[10], "2050": selectedData.data["2050"].monthly_temp[10], "2100": selectedData.data["2100"].monthly_temp[10] },
-        { month: "December", "2030": selectedData.data["2030"].monthly_temp[11], "2050": selectedData.data["2050"].monthly_temp[11], "2100": selectedData.data["2100"].monthly_temp[11] }
-      ]
-    : [],
-  {
-    format: {
-      "2030": (x) => html`<span style="background-color: ${getTemperatureColor(x)}; color: white; padding: 4px 8px; border-radius: 4px; display: inline-block; min-width: 50px;">${x.toFixed(1)}°C</span>`,
-      "2050": (x) => html`<span style="background-color: ${getTemperatureColor(x)}; color: white; padding: 4px 8px; border-radius: 4px; display: inline-block; min-width: 50px;">${x.toFixed(1)}°C</span>`,
-      "2100": (x) => html`<span style="background-color: ${getTemperatureColor(x)}; color: white; padding: 4px 8px; border-radius: 4px; display: inline-block; min-width: 50px;">${x.toFixed(1)}°C</span>`
-    }
-  }
-)
 ```
 
 ## Temperature Extremes

@@ -57,6 +57,9 @@ async def get_climate(
         boundary = await get_commune_boundary(geocoding.insee)
 
         # Step 4: Return unified response
+
+        print(climate)
+
         return {
             "geocoding": {
                 "query": address,
