@@ -146,3 +146,15 @@ from pathlib import Path
 # Create the directory if it doesn't exist
 Path("models").mkdir(parents=True, exist_ok=True)
 joblib.dump(model, "models/temp_max_year.joblib")
+
+
+
+import datetime
+
+input_df = pl.DataFrame({
+    "x": [5.405],
+    "y": [43.282],
+    "year": [datetime.date(2096, 1, 1)]
+})
+
+model.predict(input_df)
