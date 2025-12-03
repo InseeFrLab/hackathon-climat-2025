@@ -50,7 +50,10 @@ async def get_climate(
         climate = await generate_climate_projections(
             lat=geocoding.coordinates[1],  # latitude
             lon=geocoding.coordinates[0],  # longitude
-            temp_max_model=request.app.state.temp_max_model
+            models=[request.app.state.temp_max_model, 
+                    request.app.state.wind_model, 
+                    request.app.state.rain_model
+                    ]
         )
 
         # Step 3: Fetch commune boundary (may be None if not available)

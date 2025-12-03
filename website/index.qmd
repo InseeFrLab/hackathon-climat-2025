@@ -1,6 +1,6 @@
 ---
 title: "Climate Projections for France"
-subtitle: "Explore temperature and precipitation forecasts for 2030, 2050, and 2100"
+subtitle: "Explore temperature and precipitation forecasts for 2093, 2095, and 2099"
 format:
   html:
     code-tools: false
@@ -25,7 +25,7 @@ viewof address = Inputs.text({
 //| echo: false
 
 // API configuration
-apiBaseUrl = "https://user-meilametayebjee-424595-0.user.lab.sspcloud.fr/proxy/5001/"
+apiBaseUrl = "https://user-meilametayebjee-424595-0.user.lab.sspcloud.fr/proxy/5003/"
 
 // State management
 mutable apiResponse = null
@@ -98,9 +98,9 @@ selectedData = {
         insee: apiResponse.geocoding.insee,
         coordinates: apiResponse.geocoding.coordinates
       },
-      "2030": apiResponse.climate["2093"],
-      "2050": apiResponse.climate["2095"],
-      "2100": apiResponse.climate["2096"]
+      "2093": apiResponse.climate["2093"],
+      "2095": apiResponse.climate["2095"],
+      "2099": apiResponse.climate["2096"]
     }
   };
 }
@@ -208,22 +208,25 @@ html`${
   selectedData && selectedData !== "not_found" ? `
     <div class="cards">
       <div class="card" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);">
-        <h3>2030</h3>
-        <p><strong>Min:</strong> ${selectedData.data["2030"].temp_min}°C</p>
-        <p><strong>Max:</strong> ${selectedData.data["2030"].temp_max}°C</p>
-        <p><strong>Precipitation:</strong> ${selectedData.data["2030"].annual_precip}mm</p>
+        <h3>2093</h3>
+        <p><strong>Min:</strong> ${selectedData.data["2093"].temp_min}°C</p>
+        <p><strong>Max:</strong> ${selectedData.data["2093"].temp_max}°C</p>
+        <p><strong>Precipitation:</strong> ${selectedData.data["2093"].annual_precip}mm</p>
+        <p><strong>Wind:</strong> ${selectedData.data["2093"].wind}mm</p>
       </div>
       <div class="card" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
-        <h3>2050</h3>
-        <p><strong>Min:</strong> ${selectedData.data["2050"].temp_min}°C</p>
-        <p><strong>Max:</strong> ${selectedData.data["2050"].temp_max}°C</p>
-        <p><strong>Precipitation:</strong> ${selectedData.data["2050"].annual_precip}mm</p>
+        <h3>2095</h3>
+        <p><strong>Min:</strong> ${selectedData.data["2095"].temp_min}°C</p>
+        <p><strong>Max:</strong> ${selectedData.data["2095"].temp_max}°C</p>
+        <p><strong>Precipitation:</strong> ${selectedData.data["2095"].annual_precip}mm</p>
+        <p><strong>Wind:</strong> ${selectedData.data["2095"].wind}mm</p>
       </div>
       <div class="card" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);">
-        <h3>2100</h3>
-        <p><strong>Min:</strong> ${selectedData.data["2100"].temp_min}°C</p>
-        <p><strong>Max:</strong> ${selectedData.data["2100"].temp_max}°C</p>
-        <p><strong>Precipitation:</strong> ${selectedData.data["2100"].annual_precip}mm</p>
+        <h3>2099</h3>
+        <p><strong>Min:</strong> ${selectedData.data["2099"].temp_min}°C</p>
+        <p><strong>Max:</strong> ${selectedData.data["2099"].temp_max}°C</p>
+        <p><strong>Precipitation:</strong> ${selectedData.data["2099"].annual_precip}mm</p>
+        <p><strong>Wind:</strong> ${selectedData.data["2099"].wind}mm</p>
       </div>
     </div>
   ` : ''
@@ -239,15 +242,15 @@ html`${
 Inputs.table(
   selectedData && selectedData !== "not_found"
     ? [
-        { metric: "Annual Minimum (°C)", "2030": selectedData.data["2030"].temp_min, "2050": selectedData.data["2050"].temp_min, "2100": selectedData.data["2100"].temp_min },
-        { metric: "Annual Maximum (°C)", "2030": selectedData.data["2030"].temp_max, "2050": selectedData.data["2050"].temp_max, "2100": selectedData.data["2100"].temp_max }
+        { metric: "Annual Minimum (°C)", "2093": selectedData.data["2093"].temp_min, "2095": selectedData.data["2095"].temp_min, "2099": selectedData.data["2099"].temp_min },
+        { metric: "Annual Maximum (°C)", "2093": selectedData.data["2093"].temp_max, "2095": selectedData.data["2095"].temp_max, "2099": selectedData.data["2099"].temp_max }
       ]
     : [],
   {
     format: {
-      "2030": (x) => x.toFixed(1),
-      "2050": (x) => x.toFixed(1),
-      "2100": (x) => x.toFixed(1)
+      "2093": (x) => x.toFixed(1),
+      "2095": (x) => x.toFixed(1),
+      "2099": (x) => x.toFixed(1)
     }
   }
 )
@@ -262,7 +265,22 @@ Inputs.table(
 Inputs.table(
   selectedData && selectedData !== "not_found"
     ? [
-        { metric: "Annual Precipitation (mm)", "2030": selectedData.data["2030"].annual_precip, "2050": selectedData.data["2050"].annual_precip, "2100": selectedData.data["2100"].annual_precip }
+        { metric: "Annual Precipitation (mm)", "2093": selectedData.data["2093"].annual_precip, "2095": selectedData.data["2095"].annual_precip, "2099": selectedData.data["2099"].annual_precip }
+      ]
+    : []
+)
+```
+
+## Wind Force
+
+```{ojs}
+//| echo: false
+
+// Precipitation table
+Inputs.table(
+  selectedData && selectedData !== "not_found"
+    ? [
+        { metric: "Wind Force (km/h)", "2093": selectedData.data["2093"].wind, "2095": selectedData.data["2095"].wind, "2099": selectedData.data["2099"].wind }
       ]
     : []
 )
@@ -276,4 +294,4 @@ This demonstration uses mock climate projection data for two French addresses:
 - **88 avenue henri verdier, Montrouge** (Paris region)
 - **42 Av. Gaspard Coriolis, 31100 Toulouse** (South of France)
 
-The projections show trends of increasing temperatures and changing precipitation patterns from 2030 through 2100.
+The projections show trends of increasing temperatures and changing precipitation patterns from 2093 through 2099.

@@ -19,6 +19,8 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 Starting API lifespan")
 
     app.state.temp_max_model = joblib.load("models/temp_max_year.joblib")
+    app.state.wind_model = joblib.load("models/temp_max_wind.joblib")
+    app.state.rain_model = joblib.load("models/pred_cum_year.joblib")
 
     yield
     logger.info("🛑 Shutting down API lifespan")

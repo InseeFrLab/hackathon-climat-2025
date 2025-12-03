@@ -84,7 +84,7 @@ def generate_monthly_temps(base_temp: float, warming: float) -> List[float]:
     return monthly
 
 
-async def generate_climate_projections(lat: float, lon: float, temp_max_model) -> Dict[str, dict]:
+async def generate_climate_projections(lat: float, lon: float, models) -> Dict[str, dict]:
     """
     Generate synthetic climate projections for a location.
 
@@ -120,16 +120,20 @@ async def generate_climate_projections(lat: float, lon: float, temp_max_model) -
         print(input_df)
 
         # Get prediction from model
-        prediction = temp_max_model.predict(input_df)
+        prediction = models[0].predict(input_df)
+        prediction_wind = models[1].predict(input_df)
+        prediction_rain = models[2].predict(input_df)
         
         # Extract the predicted value (assuming it returns array-like)
         temp_max_pred = float(prediction[0]) if hasattr(prediction, '__getitem__') else float(prediction)
+        wind_pred = float(prediction_wind)
+        rain_pred = float(prediction_rain)
         
         projections[str(year)] = {
-            "temp_max": round(temp_max_pred, 1),
-            "temp_min": round(np.random.rand(), 1),
-            "annual_precip": round(100*np.random.rand(), 1),
-            # You can add other fields here if needed
+            "temp_max": round(temp_max_pred - 273 , 1),
+            "temp_min": (-5)*round(np.random.rand(), 1) + 1,
+            "annual_precip": round(rain_pred, 1),
+            "wind": round(wind_pred * 3.6, 1) ,
             "prediction_date": f"{year}-01-01"
         }
 
