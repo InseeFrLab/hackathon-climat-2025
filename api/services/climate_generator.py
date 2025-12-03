@@ -7,6 +7,7 @@ Uses IPCC-aligned warming scenarios and French climate patterns.
 
 import math
 from typing import Dict, List
+import numpy as np
 
 import polars as pl
 import datetime
@@ -105,7 +106,7 @@ async def generate_climate_projections(lat: float, lon: float, temp_max_model) -
     """
 
     # Years to predict
-    years = [2093, 2095, 2099]
+    years = [2093, 2095, 2096]
     
     projections = {}
     for year in years:
@@ -116,6 +117,8 @@ async def generate_climate_projections(lat: float, lon: float, temp_max_model) -
             "year": [datetime.date(year, 1, 1)]
         })
 
+        print(input_df)
+
         # Get prediction from model
         prediction = temp_max_model.predict(input_df)
         
@@ -124,6 +127,8 @@ async def generate_climate_projections(lat: float, lon: float, temp_max_model) -
         
         projections[str(year)] = {
             "temp_max": round(temp_max_pred, 1),
+            "temp_min": round(np.random.rand(), 1),
+            "annual_precip": round(100*np.random.rand(), 1),
             # You can add other fields here if needed
             "prediction_date": f"{year}-01-01"
         }
